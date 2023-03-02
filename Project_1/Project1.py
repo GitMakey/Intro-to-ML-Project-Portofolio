@@ -102,27 +102,76 @@ plt.axis('equal')
 plt.savefig(os.path.join("plots","projections.png"))
 plt.show()
 
+# Plot the first two PC  based on CHAS attribute
+
+y_CHAS = X[:,3]
+classNames_CHAS = ['Far from river','Tract bounds the river' ]
+i = 0
+j = 1
+# Compute the projection onto the principal components
+Z = U*S
+# Plot projection
+C = len(classNames_CHAS)
+for c in range(C):
+    plt.plot(Z[y_CHAS==c,i], Z[y_CHAS==c,j], '.', alpha=.5)
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('Projection PC1 - PC2')
+plt.legend(classNames_CHAS)
+plt.axis('equal')
+plt.savefig(os.path.join('plots','projections CHAS.png'))
+plt.show()
+
+# Plot the first two PC  based on RM attribute
+
+y_RM = X[:,5].round(0)
+classNames_RM = ['4 Rooms','5 Rooms','6 Rooms','7 Rooms','8 Rooms','9 Rooms']
+i = 0
+j = 1
+# Compute the projection onto the principal components
+Z = U*S
+# Plot projection
+C = len(classNames_RM)
+for c in range(C):
+    plt.plot(Z[y_RM==c,i], Z[y_RM==c,j], '.', alpha=.5)
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('Projection PC1 - PC2')
+plt.legend(classNames_RM)
+plt.axis('equal')
+plt.savefig(os.path.join('plots','projections RM.png'))
+plt.show()
+
+
 # Plot the histogram
 nbins = 20
 mu = 0
 variance = 1
 sigma = math.sqrt(variance)
-fig, axs = plt.subplots(7, 2, figsize=(13,11))
+fig, axs = plt.subplots(6, 2, figsize=(13,11))
 fig.tight_layout(pad=3.0)
+row = 0
 col = 0
-ro = 0
-
+binary_counter = 0
 for attr in range(X.shape[1]):
-    col = attr % 7
-    ro = attr // 7
-    Xtemp = Y[:,attr]
-    axs[col, ro].set_title(f'{attributeNames[attr]}')
-    axs[col, ro].hist(Xtemp, bins=nbins, density=True)
+    if attributeNames[attr] in ["CHAS", "MEDV"]: 
+        binary_counter += 1
+    else:
+        if binary_counter > 0:
+            temp = attr - binary_counter
+        else:
+            temp = attr
+            
+        row = temp % 6
+        col = temp // 6
+        Xtemp = Y[:,attr]
+        axs[row, col].set_title(f'{attributeNames[attr]}')
+        axs[row, col].hist(Xtemp, bins=nbins, density=True)
 
-    # Over the histogram, plot the theoretical probability distribution function:
-    x = np.linspace(Xtemp.min(), Xtemp.max(), 1000)
-    pdf = stats.norm.pdf(x,loc=mu,scale=sigma)
-    axs[col, ro].plot(x, pdf,'.',color='red', linewidth=1.0)
+        # Over the histogram, plot the theoretical probability distribution function:
+        x = np.linspace(Xtemp.min(), Xtemp.max(), 1000)
+        pdf = stats.norm.pdf(x,loc=mu,scale=sigma)
+        axs[row, col].plot(x, pdf,'.',color='red', linewidth=1.0)
 fig.savefig(os.path.join('plots','Normal distribution.png'))
 plt.show()
 
