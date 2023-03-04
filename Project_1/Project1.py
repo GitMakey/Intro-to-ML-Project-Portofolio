@@ -42,6 +42,22 @@ for column in range(X.shape[1]):
 
 summary_statistics = np.array([attributeNames, means, stds, medians, ranges])
 
+# Simpler way of basic stats
+stat = df.describe()
+# Build table of statistics
+fig, ax = plt.subplots()
+# hide axes
+fig.patch.set_visible(False)
+ax.axis('off')
+ax.axis('tight')
+stat_table = ax.table(cellText=np.round(stat.values, 2), colLabels=stat.columns, rowLabels=stat.index, loc='center')
+stat_table.auto_set_font_size(False)
+stat_table.set_fontsize(8)
+stat_table.scale(1.5, 1)
+#fig.tight_layout()
+plt.savefig(os.path.join("plots","table.png"), dpi=200, bbox_inches='tight')
+plt.show()
+
 # Subtract the mean from the data and divide by the attribute standard
 # deviation to obtain a standardized dataset:
 Y = X - np.ones((N, 1))*X.mean(0)
