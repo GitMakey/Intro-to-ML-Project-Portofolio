@@ -84,6 +84,7 @@ lambdas = np.power(10.,range(-2,8))
 
 #Initialize variables
 #T = len(lambdas)
+M = 6
 Error_train = np.empty((K,1))
 Error_test = np.empty((K,1))
 Error_train_rlr = np.empty((K,1))
@@ -95,7 +96,7 @@ mu = np.empty((K, M-1))
 sigma = np.empty((K, M-1))
 w_noreg = np.empty((M,K))
 
-X_ = np.concatenate((np.ones(N).reshape(-1, 1), X_), axis=1)
+X_ = np.concatenate((np.ones(N).reshape(-1, 1), X_), axis=1)[:,:6]
 k=0
 for train_index, test_index in CV.split(X_,y):
     
@@ -142,7 +143,7 @@ for train_index, test_index in CV.split(X_,y):
     #Error_train[k] = np.square(y_train-m.predict(X_train)).sum()/y_train.shape[0]
     #Error_test[k] = np.square(y_test-m.predict(X_test)).sum()/y_test.shape[0]
 
-    # Display the results for the last cross-validation fold
+    # Display the results for the last cross-validation folOpd
     if k == K-1:
         figure(k, figsize=(12,8))
         subplot(1,2,1)
@@ -187,4 +188,3 @@ print('Weights in last fold:')
 for m in range(M-1):
     print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m,-1],2)))
 
-print('Ran Exercise 8.1.1')
