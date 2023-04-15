@@ -184,7 +184,8 @@ print('- Test error:     {0}'.format(Error_test_rlr.mean()))
 print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_rlr.sum())/Error_train_nofeatures.sum()))
 print('- R^2 test:     {0}\n'.format((Error_test_nofeatures.sum()-Error_test_rlr.sum())/Error_test_nofeatures.sum()))
 
+attributeNames = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5']
 print('Weights in last fold:')
 for m in range(M-1):
-    print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m,-1],2)))
+    print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m-1,-1],2)))
 
