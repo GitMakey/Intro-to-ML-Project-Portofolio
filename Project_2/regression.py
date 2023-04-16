@@ -186,9 +186,8 @@ for m in range(M):
 ...
 
 # TRANSFORM THE RESULTS BACK INTO THE ORIGINAL FEATURE SPACE
+
 attributeNames = np.asarray(df_reg.columns)
-#attributeNames = [u'Offset']+attributeNames
-#attributeNames = np.insert(attributeNames, 0, 'offset')
 
 # X_train_pca is the first 5 principal components obtained from PCA
 X_train_pca = X_train[:, 1:6] # the first column (0) is unit column
@@ -202,6 +201,9 @@ model.fit(X_train_pca, y_train)
 X_train_reconstructed = X_train_pca @ V[:, :5].T
 
 # Compute the feature weights from the coefficients of the regularized linear regression model
+# The intercept is the same as before:
+# model.intercept_
+
 feature_weights = model.coef_.dot(V[:, :5].T)
 
 # Print the weights of the original features
@@ -209,5 +211,5 @@ print('Feature weights:')
 for i, name in enumerate(attributeNames):
     print('{:>15} {:>15}'.format(name, np.round(feature_weights[i], 2)))
 
-
+model.intercept_
 
