@@ -68,7 +68,7 @@ sns.heatmap(pca_cor.corr(),annot=True)
 plt.title('Principal components correlation matrix')
 
 N = len(y)
-M = len(attributeNames) + 1
+M = len(attributeNames)
 
 # Initialize lamdas
 lambdas = np.power(10.,range(-2,8))
@@ -96,7 +96,10 @@ mu = np.empty((K, M-1))
 sigma = np.empty((K, M-1))
 w_noreg = np.empty((M,K))
 
+# Add offset attribute
 X_ = np.concatenate((np.ones(N).reshape(-1, 1), X_), axis=1)[:,:6]
+attributeNames = [u'Offset']+attributeNames
+
 k=0
 for train_index, test_index in CV.split(X_,y):
     
@@ -138,11 +141,7 @@ for train_index, test_index in CV.split(X_,y):
     # Compute mean squared error without regularization
     Error_train[k] = np.square(y_train-X_train @ w_noreg[:,k]).sum(axis=0)/y_train.shape[0]
     Error_test[k] = np.square(y_test-X_test @ w_noreg[:,k]).sum(axis=0)/y_test.shape[0]
-    # OR ALTERNATIVELY: you can use sklearn.linear_model module for linear regression:
-    #m = lm.LinearRegression().fit(X_train, y_train)
-    #Error_train[k] = np.square(y_train-m.predict(X_train)).sum()/y_train.shape[0]
-    #Error_test[k] = np.square(y_test-m.predict(X_test)).sum()/y_test.shape[0]
-
+   
     # Display the results for the last cross-validation folOpd
     if k == K-1:
         figure(k, figsize=(12,8))
@@ -151,9 +150,7 @@ for train_index, test_index in CV.split(X_,y):
         xlabel('Regularization factor')
         ylabel('Mean Coefficient Values')
         grid()
-        # You can choose to display the legend, but it's omitted for a cleaner 
-        # plot, since there are many attributes
-        #legend(attributeNames[1:], loc='best')
+   
         
         subplot(1,2,2)
         title('Optimal lambda: 1e{0}'.format(np.log10(opt_lambda)))
@@ -162,11 +159,7 @@ for train_index, test_index in CV.split(X_,y):
         ylabel('Squared error (crossvalidation)')
         legend(['Train error','Validation error'])
         grid()
-    
-    # To inspect the used indices, use these print statements
-    #print('Cross validation fold {0}/{1}:'.format(k+1,K))
-    #print('Train indices: {0}'.format(train_index))
-    #print('Test indices: {0}\n'.format(test_index))
+
 
     k+=1
 
@@ -184,14 +177,18 @@ print('- Test error:     {0}'.format(Error_test_rlr.mean()))
 print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_rlr.sum())/Error_train_nofeatures.sum()))
 print('- R^2 test:     {0}\n'.format((Error_test_nofeatures.sum()-Error_test_rlr.sum())/Error_test_nofeatures.sum()))
 
-attributeNames = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5']
+attributeNames = ['offset', 'PC1', 'PC2', 'PC3', 'PC4', 'PC5']
 print('Weights in last fold:')
-for m in range(M-1):
-    print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m-1,-1],2)))
+for m in range(M):
+    print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m,-1],2)))
     
 
 ...
+
+# TRANSFORM THE RESULTS BACK INTO THE ORIGINAL FEATURE SPACE
 attributeNames = np.asarray(df_reg.columns)
+#attributeNames = [u'Offset']+attributeNames
+#attributeNames = np.insert(attributeNames, 0, 'offset')
 
 # X_train_pca is the first 5 principal components obtained from PCA
 X_train_pca = X_train[:, 1:6] # the first column (0) is unit column
@@ -211,5 +208,6 @@ feature_weights = model.coef_.dot(V[:, :5].T)
 print('Feature weights:')
 for i, name in enumerate(attributeNames):
     print('{:>15} {:>15}'.format(name, np.round(feature_weights[i], 2)))
+
 
 
