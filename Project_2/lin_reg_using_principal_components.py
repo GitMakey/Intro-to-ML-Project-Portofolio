@@ -188,4 +188,28 @@ attributeNames = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5']
 print('Weights in last fold:')
 for m in range(M-1):
     print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m-1,-1],2)))
+    
+
+...
+attributeNames = np.asarray(df_reg.columns)
+
+# X_train_pca is the first 5 principal components obtained from PCA
+X_train_pca = X_train[:, 1:6] # the first column (0) is unit column
+
+# Model is the regularized linear regression model fitted on X_train_pca
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train_pca, y_train)
+
+# Inverse transform the principal components back into the original feature space
+X_train_reconstructed = X_train_pca @ V[:, :5].T
+
+# Compute the feature weights from the coefficients of the regularized linear regression model
+feature_weights = model.coef_.dot(V[:, :5].T)
+
+# Print the weights of the original features
+print('Feature weights:')
+for i, name in enumerate(attributeNames):
+    print('{:>15} {:>15}'.format(name, np.round(feature_weights[i], 2)))
+
 
