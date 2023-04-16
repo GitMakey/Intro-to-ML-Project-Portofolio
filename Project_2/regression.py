@@ -211,5 +211,4 @@ print('Feature weights:')
 for i, name in enumerate(attributeNames):
     print('{:>15} {:>15}'.format(name, np.round(feature_weights[i], 2)))
 
-model.intercept_
 
