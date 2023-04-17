@@ -301,7 +301,7 @@ ff=Features[:,f-1].nonzero()[0]
 if len(ff) == 0:
     print('\nNo features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).' )
 else:
-    m = lm.LinearRegression(fit_intercept=True).fit(X[:,ff], y)
+    m = lm.LogisticRegression(fit_intercept=True).fit(X[:,ff], y)
     
     y_est= m.predict(X[:,ff])
     residual=y-y_est
@@ -318,5 +318,5 @@ else:
 show()
 
 
-
+print('Ran Tso level cross validation for logistic regression')
 
