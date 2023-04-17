@@ -17,7 +17,8 @@ from sklearn.metrics import confusion_matrix
 from numpy import cov
 from sklearn.model_selection import train_test_split
 from sklearn import model_selection
-from toolbox_02450 import feature_selector_lr, bmplot
+from sklearn.linear_model import LogisticRegression
+from toolbox_02450 import feature_selector_lr, bmplot,rocplot, confmatplot
 
 # Data process
 
@@ -74,6 +75,8 @@ N, M = X.shape
 
 print('Finish data process')
 
+# Classification Part no2:
+
 # Logistic Regression with regularization parameter
 
 C = 1.0
@@ -115,7 +118,7 @@ print('Logistic Regression')
 
 # Method 2: KNN
 
-# Load Matlab data file and extract variables of interest
+# Load data file and extract variables of interest
 X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
 y_train, y_test = train_test_split(y, test_size=0.2, random_state=42)
 C = 2
@@ -168,6 +171,8 @@ title('Confusion matrix (Accuracy: {0}%, Error Rate: {1}%)'.format(accuracy, err
 show()
 
 print('KNN Classification')
+
+# Baseline
 
 # Compute the largest class in the training data
 largest_class = np.argmax(np.bincount(y_train))
@@ -319,4 +324,5 @@ show()
 
 
 print('Ran Tso level cross validation for logistic regression')
+
 
