@@ -84,11 +84,13 @@ C = 1.0
 model = lm.LogisticRegression(penalty='l2', C=C, solver='lbfgs')
 model = model.fit(X,y)
 
-model = lm.LogisticRegression()
-model = model.fit(X,y)
+# =============================================================================
+# model = lm.LogisticRegression()
+# model = model.fit(X,y)
+# =============================================================================
 
 # Classify houses as Big/Small(0/1) and assess probabilities
-y_est = model.predict(X)
+y_est_lr = model.predict(X)
 y_est_big_prob = model.predict_proba(X)[:, 0] 
 
 # Define a new data object (new type of wine), as in exercise 5.1.7
@@ -97,7 +99,7 @@ y_est_big_prob = model.predict_proba(X)[:, 0]
 #x_class = model.predict_proba(x)[0,0]
 
 # Evaluate classifier's misclassification rate over entire training data
-misclass_rate = np.sum(y_est != y) / float(len(y_est))
+misclass_rate = np.sum(y_est_lr != y) / float(len(y_est_lr))
 
 # Display classification results
 #print('\nProbability of given sample being a white wine: {0:.4f}'.format(x_class))
@@ -147,19 +149,19 @@ knclassifier = KNeighborsClassifier(n_neighbors=K, p=dist,
                                     metric=metric,
                                     metric_params=metric_params)
 knclassifier.fit(X_train, y_train)
-y_est = knclassifier.predict(X_test)
+y_est_knn = knclassifier.predict(X_test)
 
 
 # Plot the classfication results
 styles = ['ob', 'or', 'og', 'oy']
 for c in range(C):
-    class_mask = (y_est==c)
+    class_mask = (y_est_knn==c)
     plot(X_test[class_mask,0], X_test[class_mask,1], styles[c], markersize=10)
     plot(X_test[class_mask,0], X_test[class_mask,1], 'kx', markersize=8)
 title('Synthetic data classification - KNN');
 
 # Compute and plot confusion matrix
-cm = confusion_matrix(y_test, y_est);
+cm = confusion_matrix(y_test, y_est_knn);
 accuracy = 100*cm.diagonal().sum()/cm.sum(); error_rate = 100-accuracy;
 figure(2);
 imshow(cm, cmap='binary', interpolation='None');
@@ -257,16 +259,18 @@ for train_index, test_index in CV.split(X):
         Error_train_fs[k] = np.square(y_train-m.predict(X_train[:,selected_features])).sum()/y_train.shape[0]
         Error_test_fs[k] = np.square(y_test-m.predict(X_test[:,selected_features])).sum()/y_test.shape[0]
     
-        figure(k)
-        subplot(1,2,1)
-        plot(range(1,len(loss_record)), loss_record[1:])
-        xlabel('Iteration')
-        ylabel('Squared error (crossvalidation)')    
-        
-        subplot(1,3,3)
-        bmplot(attributeNames, range(1,features_record.shape[1]), -features_record[:,1:])
-        clim(-1.5,0)
-        xlabel('Iteration')
+# =============================================================================
+#         figure(k)
+#         subplot(1,2,1)
+#         plot(range(1,len(loss_record)), loss_record[1:])
+#         xlabel('Iteration')
+#         ylabel('Squared error (crossvalidation)')    
+#         
+#         subplot(1,3,3)
+#         bmplot(attributeNames, range(1,features_record.shape[1]), -features_record[:,1:])
+#         clim(-1.5,0)
+#         xlabel('Iteration')
+# =============================================================================
 
     print('Cross validation fold {0}/{1}'.format(k+1,K))
     print('Train indices: {0}'.format(train_index))
@@ -289,40 +293,153 @@ print('- Test error:     {0}'.format(Error_test_fs.mean()))
 print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_fs.sum())/Error_train_nofeatures.sum()))
 print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test_fs.sum())/Error_test_nofeatures.sum()))
 
-figure(k)
-subplot(1,3,2)
-bmplot(attributeNames, range(1,Features.shape[1]+1), -Features)
-clim(-1.5,0)
-xlabel('Crossvalidation fold')
-ylabel('Attribute')
+# =============================================================================
+# figure(k)
+# subplot(1,3,2)
+# bmplot(attributeNames, range(1,Features.shape[1]+1), -Features)
+# clim(-1.5,0)
+# xlabel('Crossvalidation fold')
+# ylabel('Attribute')
+# =============================================================================
 
 
 # Inspect selected feature coefficients effect on the entire dataset and
 # plot the fitted model residual error as function of each attribute to
 # inspect for systematic structure in the residual
 
-f=2 # cross-validation fold to inspect
-ff=Features[:,f-1].nonzero()[0]
-if len(ff) == 0:
-    print('\nNo features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).' )
-else:
-    m = lm.LogisticRegression(fit_intercept=True).fit(X[:,ff], y)
-    
-    y_est= m.predict(X[:,ff])
-    residual=y-y_est
-    
-    figure(k+1, figsize=(12,6))
-    title('Residual error vs. Attributes for features selected in cross-validation fold {0}'.format(f))
-    for i in range(0,len(ff)):
-       subplot(2, int( np.ceil(len(ff) // 2)),i+1)
-       plot(X[:,ff[i]],residual,'.')
-       xlabel(attributeNames[ff[i]])
-       ylabel('residual error')
+# =============================================================================
+# f=2 # cross-validation fold to inspect
+# ff=Features[:,f-1].nonzero()[0]
+# if len(ff) == 0:
+#     print('\nNo features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).' )
+# else:
+#     m = lm.LogisticRegression(fit_intercept=True).fit(X[:,ff], y)
+#     
+#     y_est= m.predict(X[:,ff])
+#     residual=y-y_est
+#     
+#     figure(k+1, figsize=(12,6))
+#     title('Residual error vs. Attributes for features selected in cross-validation fold {0}'.format(f))
+#     for i in range(0,len(ff)):
+#        subplot(2, int( np.ceil(len(ff) // 2)),i+1)
+#        plot(X[:,ff[i]],residual,'.')
+#        xlabel(attributeNames[ff[i]])
+#        ylabel('residual error')
+# =============================================================================
     
     
 show()
 
 
-print('Ran Tso level cross validation for logistic regression')
+print('Ran Two level cross validation for logistic regression')
+
+## Crossvalidation for KNN
+# Create crossvalidation partition for evaluation
+K = 5
+CV = model_selection.KFold(n_splits=K,shuffle=True)
+
+# Initialize variables
+Features = np.zeros((M,K))
+Error_train = np.empty((K,1))
+Error_test = np.empty((K,1))
+Error_train_fs = np.empty((K,1))
+Error_test_fs = np.empty((K,1))
+Error_train_nofeatures = np.empty((K,1))
+Error_test_nofeatures = np.empty((K,1))
+
+k=0
+for train_index, test_index in CV.split(X):
+    
+    # extract training and test set for current CV fold
+    X_train = X[train_index,:]
+    y_train = y[train_index]
+    X_test = X[test_index,:]
+    y_test = y[test_index]
+    internal_cross_validation = 10
+    
+    # Compute squared error without using the input data at all
+    Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum()/y_train.shape[0]
+    Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum()/y_test.shape[0]
+    
+    # K-nearest neighbors
+    neighbors = 5
+
+    # Distance metric (corresponds to 2nd norm, euclidean distance).
+    # You can set dist=1 to obtain manhattan distance (cityblock distance).
+    dist=1
+
+    # To use a mahalonobis distance, we need to input the covariance matrix, too:
+    metric_m='mahalanobis'
+    metric_m_params={'V': cov(X_train, rowvar=False)}
+
+    # Compute squared error with all features selected (no feature selection)
+    # Fit classifier and classify the test points
+    m = KNeighborsClassifier(n_neighbors=neighbors, p=dist, 
+                                        metric=metric_m,
+                                        metric_params=metric_m_params)
+    m.fit(X_train, y_train)
+    
+    Error_train[k] = np.square(y_train-m.predict(X_train)).sum()/y_train.shape[0]
+    Error_test[k] = np.square(y_test-m.predict(X_test)).sum()/y_test.shape[0]
+
+    # Compute squared error with feature subset selection
+    textout = ''
+    selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,display=textout)
+# =============================================================================
+#     
+#     Features[selected_features,k] = 1
+#     # .. alternatively you could use module sklearn.feature_selection
+#     if len(selected_features) == 0:
+#         print('No features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).' )
+#     else:
+#         
+#         # K-nearest neighbors
+#         neighbors_f=5
+# 
+#         # Distance metric (corresponds to 2nd norm, euclidean distance).
+#         # You can set dist=1 to obtain manhattan distance (cityblock distance).
+#         dist=1
+# 
+#         # To use a mahalonobis distance, we need to input the covariance matrix, too:
+#         metric_m='mahalanobis'
+#         metric_m_params={'V': cov(X_train, rowvar=False)}
+# 
+#         # Fit classifier and classify the test points
+#         knclassifier = KNeighborsClassifier(n_neighbors=K, p=dist, 
+#                                             metric=metric_m,
+#                                             metric_params=metric_m_params)
+#         knclassifier.fit(X_train[:,selected_features], y_train)
+#         
+#         Error_train_fs[k] = np.square(y_train-knclassifier.predict(X_train[:,selected_features])).sum()/y_train.shape[0]
+#         Error_test_fs[k] = np.square(y_test-knclassifier.predict(X_test[:,selected_features])).sum()/y_test.shape[0]
+#     
+#     
+#     print('Cross validation fold {0}/{1}'.format(k+1,K))
+#     print('Train indices: {0}'.format(train_index))
+#     print('Test indices: {0}'.format(test_index))
+#     print('Features no: {0}\n'.format(selected_features.size))
+# 
+#     k+=1
+# 
+# 
+# # Display results
+# print('\n')
+# print('KNN without feature selection:\n')
+# print('- Training error: {0}'.format(Error_train.mean()))
+# print('- Test error:     {0}'.format(Error_test.mean()))
+# print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train.sum())/Error_train_nofeatures.sum()))
+# print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test.sum())/Error_test_nofeatures.sum()))
+# print('KNN with feature selection:\n')
+# print('- Training error: {0}'.format(Error_train_fs.mean()))
+# print('- Test error:     {0}'.format(Error_test_fs.mean()))
+# print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_fs.sum())/Error_train_nofeatures.sum()))
+# print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test_fs.sum())/Error_test_nofeatures.sum()))
+#     
+#     
+# show()
+# 
+# =============================================================================
+
+print('Ran Two level cross validation for KNN')
 
 
