@@ -78,31 +78,19 @@ print('Finish data process')
 # Classification Part no2:
 
 # Logistic Regression with regularization parameter
-
 C = 1.0
 
 model = lm.LogisticRegression(penalty='l2', C=C, solver='lbfgs')
 model = model.fit(X,y)
 
-# =============================================================================
-# model = lm.LogisticRegression()
-# model = model.fit(X,y)
-# =============================================================================
-
 # Classify houses as Big/Small(0/1) and assess probabilities
 y_est_lr = model.predict(X)
 y_est_big_prob = model.predict_proba(X)[:, 0] 
-
-# Define a new data object (new type of wine), as in exercise 5.1.7
-#x = np.array([6.9, 1.09, .06, 2.1, .0061, 12, 31, .99, 3.5, .44, 12]).reshape(1,-1)
-# Evaluate the probability of x being a white wine (class=0) 
-#x_class = model.predict_proba(x)[0,0]
 
 # Evaluate classifier's misclassification rate over entire training data
 misclass_rate = np.sum(y_est_lr != y) / float(len(y_est_lr))
 
 # Display classification results
-#print('\nProbability of given sample being a white wine: {0:.4f}'.format(x_class))
 print('\nOverall misclassification rate: {0:.3f}'.format(misclass_rate))
 
 f = figure();
@@ -110,7 +98,7 @@ class0_ids = np.nonzero(y==0)[0].tolist()
 plot(class0_ids, y_est_big_prob[class0_ids], '.y')
 class1_ids = np.nonzero(y==1)[0].tolist()
 plot(class1_ids, y_est_big_prob[class1_ids], '.r')
-xlabel('Data object (Houses)'); ylabel('Predicted prob. of class Big');
+xlabel('Data object (Houses)'); ylabel('Predicted  prob. of class Big');
 legend(['Big', 'Small'])
 ylim(-0.01,1.5)
 
@@ -259,18 +247,18 @@ for train_index, test_index in CV.split(X):
         Error_train_fs[k] = np.square(y_train-m.predict(X_train[:,selected_features])).sum()/y_train.shape[0]
         Error_test_fs[k] = np.square(y_test-m.predict(X_test[:,selected_features])).sum()/y_test.shape[0]
     
-# =============================================================================
-#         figure(k)
-#         subplot(1,2,1)
-#         plot(range(1,len(loss_record)), loss_record[1:])
-#         xlabel('Iteration')
-#         ylabel('Squared error (crossvalidation)')    
-#         
-#         subplot(1,3,3)
-#         bmplot(attributeNames, range(1,features_record.shape[1]), -features_record[:,1:])
-#         clim(-1.5,0)
-#         xlabel('Iteration')
-# =============================================================================
+
+        figure(k)
+        subplot(1,2,1)
+        plot(range(1,len(loss_record)), loss_record[1:])
+        xlabel('Iteration')
+        ylabel('Squared error (crossvalidation)')    
+         
+        subplot(1,3,3)
+        bmplot(attributeNames, range(1,features_record.shape[1]), -features_record[:,1:])
+        clim(-1.5,0)
+        xlabel('Iteration')
+
 
     print('Cross validation fold {0}/{1}'.format(k+1,K))
     print('Train indices: {0}'.format(train_index))
@@ -423,17 +411,17 @@ for train_index, test_index in CV.split(X):
 # 
 # 
 # # Display results
-# print('\n')
-# print('KNN without feature selection:\n')
-# print('- Training error: {0}'.format(Error_train.mean()))
-# print('- Test error:     {0}'.format(Error_test.mean()))
-# print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train.sum())/Error_train_nofeatures.sum()))
-# print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test.sum())/Error_test_nofeatures.sum()))
-# print('KNN with feature selection:\n')
-# print('- Training error: {0}'.format(Error_train_fs.mean()))
-# print('- Test error:     {0}'.format(Error_test_fs.mean()))
-# print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_fs.sum())/Error_train_nofeatures.sum()))
-# print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test_fs.sum())/Error_test_nofeatures.sum()))
+print('\n')
+print('KNN without feature selection:\n')
+print('- Training error: {0}'.format(Error_train.mean()))
+print('- Test error:     {0}'.format(Error_test.mean()))
+print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train.sum())/Error_train_nofeatures.sum()))
+print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test.sum())/Error_test_nofeatures.sum()))
+print('KNN with feature selection:\n')
+print('- Training error: {0}'.format(Error_train_fs.mean()))
+print('- Test error:     {0}'.format(Error_test_fs.mean()))
+print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_fs.sum())/Error_train_nofeatures.sum()))
+print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test_fs.sum())/Error_test_nofeatures.sum()))
 #     
 #     
 # show()
