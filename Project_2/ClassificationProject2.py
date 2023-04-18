@@ -335,7 +335,7 @@ print('Ran Two level cross validation for logistic regression')
 
 ## Crossvalidation for KNN
 # Create crossvalidation partition for evaluation
-K = 5
+K = 10
 CV = model_selection.KFold(n_splits=K,shuffle=True)
 
 # Initialize variables
@@ -346,6 +346,7 @@ Error_train_fs = np.empty((K,1))
 Error_test_fs = np.empty((K,1))
 Error_train_nofeatures = np.empty((K,1))
 Error_test_nofeatures = np.empty((K,1))
+Neighbors = np.empty(10)
 
 k=0
 for train_index, test_index in CV.split(X):
@@ -355,26 +356,59 @@ for train_index, test_index in CV.split(X):
     y_train = y[train_index]
     X_test = X[test_index,:]
     y_test = y[test_index]
-    internal_cross_validation = 10
+    #internal_cross_validation = 10
+    
+    # To use a mahalonobis distance, we need to input the covariance matrix, too:
+    metric_m='mahalanobis'
+    metric_m_params={'V': cov(X_train, rowvar=False)}
+    
+    # Inner loop of calculating the ideal k
+    L=10
+
+    CVi = model_selection.LeaveOneOut()
+    errors = np.zeros((N,L))
+    i=0
+    for train_index, test_index in CVi.split(X_train, y_train):
+        print('Crossvalidation fold: {0}/{1}'.format(i+1,N))    
+        
+        # extract training and test set for current CV fold
+        X_train_i = X_train[train_index,:]
+        y_train_i = y_train[train_index]
+        X_test_i = X_train[test_index,:]
+        y_test_i = y_train[test_index]
+
+        # Fit classifier and classify the test points (consider 1 to 40 neighbors)
+        for l in range(1,L+1):
+            knclassifier = KNeighborsClassifier(n_neighbors=l, 
+                                                metric=metric_m,
+                                                metric_params=metric_m_params);
+            knclassifier.fit(X_train_i, y_train_i);
+            y_est = knclassifier.predict(X_test_i);
+            errors[i,l-1] = np.sum(y_est[0]!=y_test_i[0])
+
+        i+=1
+        
+    # Plot the classification error rate
+    error_summed=100*sum(errors,0)/N
+    figure()
+    plot(error_summed)
+    xlabel('Number of neighbors')
+    ylabel('Classification error rate (%)')
+    show()
+    
+    print(100*sum(errors,0)/N)
     
     # Compute squared error without using the input data at all
     Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum()/y_train.shape[0]
     Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum()/y_test.shape[0]
     
     # K-nearest neighbors
-    neighbors = 5
+    neighbors = np.where(error_summed == min(error_summed))[0][0]+1
+    Neighbors = np.append(Neighbors, neighbors)
 
-    # Distance metric (corresponds to 2nd norm, euclidean distance).
-    # You can set dist=1 to obtain manhattan distance (cityblock distance).
-    dist=1
-
-    # To use a mahalonobis distance, we need to input the covariance matrix, too:
-    metric_m='mahalanobis'
-    metric_m_params={'V': cov(X_train, rowvar=False)}
-
-    # Compute squared error with all features selected (no feature selection)
+    # Compute squared error with all features selected
     # Fit classifier and classify the test points
-    m = KNeighborsClassifier(n_neighbors=neighbors, p=dist, 
+    m = KNeighborsClassifier(n_neighbors=neighbors, 
                                         metric=metric_m,
                                         metric_params=metric_m_params)
     m.fit(X_train, y_train)
@@ -382,9 +416,14 @@ for train_index, test_index in CV.split(X):
     Error_train[k] = np.square(y_train-m.predict(X_train)).sum()/y_train.shape[0]
     Error_test[k] = np.square(y_test-m.predict(X_test)).sum()/y_test.shape[0]
 
-    # Compute squared error with feature subset selection
-    textout = ''
-    selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,display=textout)
+    
+# Display results
+np.set_printoptions(suppress=True)
+print('\n')
+print('KNN without feature selection:\n')
+print('- Neighbors: {0}'.format(Neighbors))
+print('- Train error:     {0}'.format(Error_train))
+print('- Test error:     {0}'.format(Error_test))
 # =============================================================================
 #     
 #     Features[selected_features,k] = 1
