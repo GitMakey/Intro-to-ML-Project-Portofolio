@@ -49,7 +49,10 @@ zB = np.abs(y_test - yhatB ) ** 2
 z = zA - zB
 CI = st.t.interval(1-alpha, len(z)-1, loc=np.mean(z), scale=st.sem(z))  # Confidence interval
 p = 2*st.t.cdf( -np.abs( np.mean(z) )/st.sem(z), df=len(z)-1)  # p-value
-print("p-value", p)
-print("CI", CI)
+print("p-value setup I", p[0])
+print("CI setup I", CI[0][0], CI[1][0])
 
 print("Ran computing p-value and confidence interval using K-fold cross-validation")
+
+
+
