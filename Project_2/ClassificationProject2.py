@@ -68,7 +68,7 @@ N, M = X.shape
 
 print('Finish data process')
 
-# Classification Part no2:
+# Classification Part2:
 
 # Logistic Regression with regularization parameter
 C = 1.0
@@ -191,9 +191,11 @@ show()
 
 print('Baseline model classification')
 
+# Classification part 3:
+
 # Two level cross validation
 
-## Crossvalidation
+## Two level Crossvalidation for logistic regression
 # Create crossvalidation partition for evaluation
 K = 5
 CV = model_selection.KFold(n_splits=K,shuffle=True)
@@ -262,7 +264,7 @@ show()
 
 print('Ran Two level cross validation for logistic regression')
 
-## Crossvalidation for KNN
+## Two level Crossvalidation for KNN
 # Create crossvalidation partition for evaluation
 K = 10
 CV = model_selection.KFold(n_splits=K,shuffle=True)

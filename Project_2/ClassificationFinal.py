@@ -25,7 +25,8 @@ from toolbox_02450 import feature_selector_lr, bmplot,rocplot, confmatplot
 # Data process
 
 # Load the Real-Estate csv data using the Pandas library
-# URL ='https://www.kaggle.com/datasets/arslanali4343/real-estate-dataset'
+# URL = 'https://www.kaggle.com/datasets/arslanali4343/real-estate-dataset'
+# URL = 'https://storage.googleapis.com/kagglesdsdata/datasets/898072/1523358/data.csv?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=gcp-kaggle-com%40kaggle-161607.iam.gserviceaccount.com%2F20230301%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20230301T160235Z&X-Goog-Expires=259200&X-Goog-SignedHeaders=host&X-Goog-Signature=1f4f05b433874186e8dea74d05881585e7bb23da6802a1a7d67bb61749fd784cfc845b318b1e35dd3e07a3d1fec99b1ad2b7f05d5eac6d584e9cfad6d5a6d2d414a259851464b32ad58db293bdb0c913a206a915a87155383f98ec1acb5f098aff7eb1a5f66ef10c1565caa6c8da14ed91c8f964235f216f595f6175cf279ed8e792e093f19b1aa4223d21bf404d6055a4f2b06a51af27513c10683662a56669d04d1fa0cbb5dc76b01f46c0af2ba27a7c31a018a3111c0eeb81dadeff2ebf87adc770e5bc7a28ca998c79d7c356b99cb3b93e2309c806b8ef6c8218a3290d33fddacfae95bf42308b0d00c22e1df9f1c54b94a80136f1aad8eec8d3e3459aeb'
 df = pd.read_csv('real_estate_dataset.csv')
 
 # Check null
@@ -69,7 +70,7 @@ N, M = X.shape
 
 print('Finish data process')
 
-# Classification Part no2:
+# Classification Part2:
 
 # Logistic Regression with regularization parameter
 C = 1.0
@@ -192,9 +193,11 @@ show()
 
 print('Baseline model classification')
 
-# Classification part 3: Two level cross validation
+# Classification part 3:
 
-## Crossvalidation
+# Two level cross validation
+
+## Two level Crossvalidation for logistic regression
 # Create crossvalidation partition for evaluation
 K = 5
 CV = model_selection.KFold(n_splits=K,shuffle=True)
@@ -233,14 +236,12 @@ for train_index, test_index in CV.split(X):
     selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,display=textout)
     
     Features[selected_features,k] = 1
-    
     if len(selected_features) == 0:
         print('No features were selected, i.e. the data (X) in the fold cannot describe the outcomes (y).' )
     else:
         m = lm.LogisticRegression(fit_intercept=True).fit(X_train[:,selected_features], y_train)
         Error_train_fs[k] = np.square(y_train-m.predict(X_train[:,selected_features])).sum()/y_train.shape[0]
         Error_test_fs[k] = np.square(y_test-m.predict(X_test[:,selected_features])).sum()/y_test.shape[0]
-    
 
     k+=1
 
@@ -264,9 +265,9 @@ show()
 
 print('Ran Two level cross validation for logistic regression')
 
-## Crossvalidation for KNN
+## Two level Crossvalidation for KNN
 # Create crossvalidation partition for evaluation
-K = 5
+K = 10
 CV = model_selection.KFold(n_splits=K,shuffle=True)
 
 # Initialize variables
@@ -277,6 +278,7 @@ Error_train_fs = np.empty((K,1))
 Error_test_fs = np.empty((K,1))
 Error_train_nofeatures = np.empty((K,1))
 Error_test_nofeatures = np.empty((K,1))
+Neighbors = np.empty(10)
 
 k=0
 for train_index, test_index in CV.split(X):
@@ -286,26 +288,59 @@ for train_index, test_index in CV.split(X):
     y_train = y[train_index]
     X_test = X[test_index,:]
     y_test = y[test_index]
-    internal_cross_validation = 10
+    #internal_cross_validation = 10
+    
+    # To use a mahalonobis distance, we need to input the covariance matrix, too:
+    metric_m='mahalanobis'
+    metric_m_params={'V': cov(X_train, rowvar=False)}
+    
+    # Inner loop of calculating the ideal k
+    L=10
+
+    CVi = model_selection.LeaveOneOut()
+    errors = np.zeros((N,L))
+    i=0
+    for train_index, test_index in CVi.split(X_train, y_train):
+        #print('Crossvalidation fold: {0}/{1}'.format(i+1,N))    
+        
+        # extract training and test set for current CV fold
+        X_train_i = X_train[train_index,:]
+        y_train_i = y_train[train_index]
+        X_test_i = X_train[test_index,:]
+        y_test_i = y_train[test_index]
+
+        # Fit classifier and classify the test points (consider 1 to 40 neighbors)
+        for l in range(1,L+1):
+            knclassifier = KNeighborsClassifier(n_neighbors=l, 
+                                                metric=metric_m,
+                                                metric_params=metric_m_params);
+            knclassifier.fit(X_train_i, y_train_i);
+            y_est = knclassifier.predict(X_test_i);
+            errors[i,l-1] = np.sum(y_est[0]!=y_test_i[0])
+
+        i+=1
+        
+    # Plot the classification error rate
+    error_summed=100*sum(errors,0)/N
+    figure()
+    plot(error_summed)
+    xlabel('Number of neighbors')
+    ylabel('Classification error rate (%)')
+    show()
+    
+    print(100*sum(errors,0)/N)
     
     # Compute squared error without using the input data at all
     Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum()/y_train.shape[0]
     Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum()/y_test.shape[0]
     
     # K-nearest neighbors
-    neighbors = 5
+    neighbors = np.where(error_summed == min(error_summed))[0][0]+1
+    Neighbors = np.append(Neighbors, neighbors)
 
-    # Distance metric (corresponds to 2nd norm, euclidean distance).
-    # You can set dist=1 to obtain manhattan distance (cityblock distance).
-    dist=1
-
-    # To use a mahalonobis distance, we need to input the covariance matrix, too:
-    metric_m='mahalanobis'
-    metric_m_params={'V': cov(X_train, rowvar=False)}
-
-    # Compute squared error with all features selected (no feature selection)
+    # Compute squared error with all features selected
     # Fit classifier and classify the test points
-    m = KNeighborsClassifier(n_neighbors=neighbors, p=dist, 
+    m = KNeighborsClassifier(n_neighbors=neighbors, 
                                         metric=metric_m,
                                         metric_params=metric_m_params)
     m.fit(X_train, y_train)
@@ -313,28 +348,15 @@ for train_index, test_index in CV.split(X):
     Error_train[k] = np.square(y_train-m.predict(X_train)).sum()/y_train.shape[0]
     Error_test[k] = np.square(y_test-m.predict(X_test)).sum()/y_test.shape[0]
 
-    # Compute squared error with feature subset selection
-    textout = ''
-    selected_features, features_record, loss_record = feature_selector_lr(X_train, y_train, internal_cross_validation,display=textout)
-# 
-# 
-# # Display results
+    
+# Display results
+np.set_printoptions(suppress=True)
 print('\n')
 print('KNN without feature selection:\n')
-print('- Training error: {0}'.format(Error_train.mean()))
-print('- Test error:     {0}'.format(Error_test.mean()))
-print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train.sum())/Error_train_nofeatures.sum()))
-print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test.sum())/Error_test_nofeatures.sum()))
-print('KNN with feature selection:\n')
-print('- Training error: {0}'.format(Error_train_fs.mean()))
-print('- Test error:     {0}'.format(Error_test_fs.mean()))
-print('- R^2 train:     {0}'.format((Error_train_nofeatures.sum()-Error_train_fs.sum())/Error_train_nofeatures.sum()))
-print('- R^2 test:     {0}'.format((Error_test_nofeatures.sum()-Error_test_fs.sum())/Error_test_nofeatures.sum()))
-#     
-#     
-# show()
-# 
-# =============================================================================
+print('- Neighbors: {0}'.format(Neighbors))
+print('- Train error:     {0}'.format(Error_train))
+print('- Test error:     {0}'.format(Error_test))
+
 
 print('Ran Two level cross validation for KNN')
 
