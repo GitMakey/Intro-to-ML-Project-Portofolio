@@ -112,10 +112,6 @@ for train_index, test_index in CV.split(X,y):
         legend(['Train error','Validation error'])
         grid()
     
-    # To inspect the used indices, use these print statements
-    print('Cross validation fold {0}/{1}:'.format(k+1,K))
-    print('Train indices: {0}'.format(train_index))
-    print('Test indices: {0}\n'.format(test_index))
 
     k+=1
 
