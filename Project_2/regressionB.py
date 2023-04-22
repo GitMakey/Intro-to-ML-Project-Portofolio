@@ -18,6 +18,7 @@ _lambdas = np.logspace(-1, 2, 10)
 
 # Neural Network
 _hidden = np.arange(1,4)
+#_hidden = np.arange(1,8)
 M = 3 # number of features
 
 

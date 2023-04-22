@@ -4,7 +4,7 @@ import numpy as np
 
 # Load csv with data
 df = pd.read_csv('real_estate_dataset.csv')
-
+df
 # Drop the missing data
 df = df.dropna()
 
@@ -27,7 +27,7 @@ X = np.concatenate((np.ones(N_).reshape(-1, 1), X_), axis=1)
 
 
 # Chose features and get necessary matrixes
-attributeNames = ['RM', 'B', 'ZN']
+attributeNames = ['ZN', 'RM', 'B']
 y_attr = ['MEDV']
 
 
@@ -35,6 +35,4 @@ y_attr = ['MEDV']
 # Compute values of N, M.
 N = len(y)
 M = len(attributeNames_)+1
-
-
 
